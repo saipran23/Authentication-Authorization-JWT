@@ -2,6 +2,8 @@ import express from "express";
 
 import client from "./database/db.js";
 import auth from "./routes/auth.js";
+import homeRoutes from "./routes/home-routes.js";
+import adminRoutes from "./routes/admin-routes.js";
 
 const app = express();
 
@@ -14,6 +16,8 @@ app.use(express.static("public"));
 
 
 app.use("/api/auth", auth);
+app.use("/api/home", homeRoutes);
+app.use("/api/admin", adminRoutes);
 
 function startServer(){
 
