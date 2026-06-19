@@ -116,5 +116,60 @@ const login = async (req, res) => {
 
 }
 
+const changePassword = async (req, res) => {
 
-export {register, login};
+    const {password, newPassword} = req.body;
+
+    if (!password || !newPassword) {
+        return res.status(400).send({
+            status: "error",
+            message: "Email and password is required"
+        })
+    }
+
+    try {
+
+        const user = req.userInfo;
+
+        const result = await client.query(`SELECT * FROM users WHERE email = $1`,
+            [user.email]);
+
+        if (result.rows.length === 0) {
+            return res.status(400).send({
+                status: "error",
+                message: "Email is not registered"
+            })
+        }
+
+        const isMatch = await bcrypt.compare(
+            password,
+            result.rows[0].password
+        );
+
+        if (!isMatch) {
+            return res.status(400).send({
+                status: "error",
+                message: "Invalid Password"
+            })
+        }
+
+        const hashPassword = await bcrypt.hash(newPassword, salt);
+        const response = await client.query(`UPDATE users SET password = $1 WHERE email = $2 AND id = $3`, [hashPassword, user.email, user.id]);
+
+
+        return res.status(200).json({
+            status: 200,
+            message: "password updated sucessfully"
+        })
+
+
+    } catch (err) {
+        return res.status(500).send({
+            status: "error",
+            message: err.message
+        })
+    }
+}
+
+
+export {register, login, changePassword};
